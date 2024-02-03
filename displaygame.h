@@ -23,21 +23,21 @@ enum wincodes
 // controls
 enum keys
 {
-    UP_ARROW = 100,
-    DOWN_ARROW,
-    LEFT_ARROW,
-    RIGHT_ARROW,
-    ENTER_KEY,
+	UP_ARROW = 100,
+	DOWN_ARROW,
+	LEFT_ARROW,
+	RIGHT_ARROW,
+	ENTER_KEY,
 };
 
 // a width * width table
 struct game_table
 {
-    int **val_table;
-    int width;
-    int cur_x;
-    int cur_y;
-    int filled;
+	int **val_table;
+	int width;
+	int cur_x;
+	int cur_y;
+	int filled;
 };
 
 // public functions

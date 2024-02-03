@@ -15,7 +15,7 @@ int getinputEvent(void) {
 
 	pfd.fd = STDIN_FILENO;
 	pfd.events = POLLIN;
-	
+
 	int timeout = 0;//in milliseconds
 
 	return poll(&pfd, 1, timeout);
@@ -96,18 +96,18 @@ int main(int argc, char *argv[])
 			{
 				switch (seq[1])
 				{
-				case 'A':
-					key_input = UP_ARROW;
-					break;
-				case 'B':
-					key_input = DOWN_ARROW;
-					break;
-				case 'C':
-					key_input = RIGHT_ARROW;
-					break;
-				case 'D':
-					key_input = LEFT_ARROW;
-					break;
+					case 'A':
+						key_input = UP_ARROW;
+						break;
+					case 'B':
+						key_input = DOWN_ARROW;
+						break;
+					case 'C':
+						key_input = RIGHT_ARROW;
+						break;
+					case 'D':
+						key_input = LEFT_ARROW;
+						break;
 				}
 			}
 		}
