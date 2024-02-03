@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <poll.h>
+#include <time.h>
 #include "displaygame.h"
 
 #define DEF_WIDTH 3
-#define BLINKDELAY_MS 1000
+#define BLINKDELAY_MS 500
 #define LOOPDELAY_MS     100
 
 int getinputEvent(void) {
@@ -53,9 +54,10 @@ int reset_terminal(void)
 int main(int argc, char *argv[])
 {
 	int width = 0;
+	char * useless;
 	if (argc > 1)
 	{
-		width = atoi(argv[1]);
+		width = strtoul(argv[1], &useless, 10);
 	}
 
 	if (width == 0)
@@ -70,9 +72,10 @@ int main(int argc, char *argv[])
 	char c;
 	int key_input = 0;
 	int turn = O_CHANCE;
-	int win = FAILURE;
 	int iter = 0;
 	int cursor_state = 0;
+	int win = FAILURE;
+	struct timespec a = {0, LOOPDELAY_MS* 1000000};
 	//display_dispTable(&gtable, key_input, turn, cursor_state);
 	while (1)
 	{
@@ -86,6 +89,8 @@ int main(int argc, char *argv[])
 			char seq[2];
 			seq[0] = getchar();
 			seq[1] = getchar();
+			//show cursor while moving around:
+			cursor_state = 1;
 
 			if (seq[0] == '[')
 			{
@@ -116,21 +121,22 @@ int main(int argc, char *argv[])
 			break;
 		} else if (c == 0) {
 			//for blinking cursor.
-			iter = iter + 1;
+			iter = iter + LOOPDELAY_MS;
 
-			if (iter < (BLINKDELAY_MS/(2 * LOOPDELAY_MS))) {
+			if (iter < (BLINKDELAY_MS/2)) {
 				cursor_state = 0;
 			} else {
 				cursor_state = 1;
 			}
-			if (iter > (BLINKDELAY_MS/LOOPDELAY_MS)) {
+			if (iter >= BLINKDELAY_MS) {
 				iter = 0;
 			}
 			key_input = 0;
 			usleep(LOOPDELAY_MS * 1000);
+			nanosleep(&a, NULL);
 		}
 		win = display_dispTable(&gtable, key_input, turn, cursor_state);
-		if (key_input == ENTER_KEY)
+		if (key_input == ENTER_KEY && win == TURN_DONE)
 		{
 			if (turn == O_CHANCE)
 			{
@@ -143,10 +149,13 @@ int main(int argc, char *argv[])
 		}
 		if (win == SUCCESS)
 		{
+			cursor_state = 0;
+			display_dispTable(&gtable, key_input, turn, cursor_state);
 			printf("Game Over..\n");
 			break;
 		}
 	}
+	display_deinitGtable(&gtable);
 	reset_terminal();
 	return SUCCESS;
 }

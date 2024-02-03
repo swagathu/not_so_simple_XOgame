@@ -8,22 +8,29 @@
 int display_initGtable(int width, struct game_table *g)
 {
     int **val_table;
-    val_table = malloc(sizeof(int *) * width);
+    int ** temp2 = NULL;
+    int * temp = NULL;
 
     g->width = width;
-    if (val_table == NULL)
+    temp2 = malloc(sizeof(int *) * width);
+    if (temp2 == NULL)
     {
-        printf("malloc error in val_table, %s", strerror(errno));
+        printf("malloc error in val table, %s", strerror(errno));
         return FAILURE;
     }
+    val_table = temp2;
+    
     for (int i = 0; i < width; i++)
     {
-        val_table[i] = malloc(sizeof(int) * width);
-        if (val_table[i] == NULL)
+	temp = malloc(sizeof(int) * width);
+        if (temp == NULL)
         {
-            printf("malloc error in val_table[%d], %s", i, strerror(errno));
+            printf("malloc error in val_table[%d] loc, %s", i, strerror(errno));
+	    free(val_table);
             return FAILURE;
         }
+        val_table[i] = temp;
+
         for (int j = 0; j < width; j++)
         {
             val_table[i][j] = -1;
@@ -35,6 +42,10 @@ int display_initGtable(int width, struct game_table *g)
     g->cur_y = 0;
     g->filled = 0;
     return SUCCESS;
+}
+
+void display_deinitGtable(struct game_table * g) {
+	free(g->val_table);
 }
 
 void display_clearScreen(void)
@@ -165,12 +176,12 @@ int display_setValue(struct game_table *g, int key_input, int turn)
     int **table = g->val_table;
     if (key_input != ENTER_KEY)
     {
-        return SUCCESS;
+        return NO_TURN;
     }
     int val = table[g->cur_x][g->cur_y];
     if (val != -1)
     {
-        return SUCCESS;
+        return NO_TURN;
     }
     if (turn == O_CHANCE)
     {
@@ -182,7 +193,7 @@ int display_setValue(struct game_table *g, int key_input, int turn)
         table[g->cur_x][g->cur_y] = 1;
         g->filled++;
     }
-    return SUCCESS;
+    return TURN_DONE;
 }
 
 int display_getWinner(int val)
@@ -307,6 +318,8 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
 {
     int width = g->width;
     int **table = g->val_table;
+	int ret = FAILURE;
+	int ret2 = NO_TURN;
 
     if (width < 1)
     {
@@ -317,13 +330,13 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     if (key_input != 0) {
     	display_SetCurLoc(width, key_input, &(g->cur_x), &(g->cur_y));
     }
-    // display_setValue(g, key_input, turn);
     printf("\n\
 +++++++++++\n\
 + XO game +\n\
 +++++++++++\n\n");
     printf("Xpos = %d, Ypos = %d, cur_turn: %c\n", g->cur_x + 1, g->cur_y + 1, (turn == O_CHANCE) ? 'O' : 'X');
-    display_setValue(g, key_input, turn);
+    
+    ret2 = display_setValue(g, key_input, turn);
 
     display_drawTop(width);
 
@@ -338,12 +351,14 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     if (key_input == ENTER_KEY) {
     	winner = display_validateTable(width, g);
     }
-
-    int ret = display_printWinner(winner);
+	if (winner != FAILURE) { 
+    		ret = display_printWinner(winner);
+	}
     if (ret == SUCCESS)
     {
         return SUCCESS;
+    } else {
+	    return ret2;
     }
-
     return FAILURE;
 }

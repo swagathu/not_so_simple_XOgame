@@ -1,16 +1,24 @@
 
 // return codes
-#define FAILURE -1
-#define SUCCESS 0
+#define FAILURE		-1
+#define SUCCESS		0
 
-// XO
-#define X_CHANCE 1
-#define O_CHANCE 0
+enum gamecodes
+{
+	O_CHANCE = 0,
+	X_CHANCE,
+	TURN_DONE,
+	NO_TURN,
+	END_GCODES
+};
 
-// result
-#define DRAW 2
-#define WIN_O 3
-#define WIN_X 4
+enum wincodes
+{
+	DRAW = END_GCODES,
+	WIN_O,
+	WIN_X,
+	END_WINCODES
+};
 
 // controls
 enum keys
@@ -34,5 +42,6 @@ struct game_table
 
 // public functions
 int display_initGtable( int, struct game_table *);
+void display_deinitGtable(struct game_table *);
 int display_dispTable( struct game_table *, int, int, int);
 
