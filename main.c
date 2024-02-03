@@ -7,7 +7,7 @@
 #include "displaygame.h"
 
 #define DEF_WIDTH 3
-#define BLINKDELAY_MS 500
+#define BLINKDELAY_MS 1000
 #define LOOPDELAY_MS     100
 
 int getinputEvent(void) {
@@ -132,7 +132,6 @@ int main(int argc, char *argv[])
 				iter = 0;
 			}
 			key_input = 0;
-			usleep(LOOPDELAY_MS * 1000);
 			nanosleep(&a, NULL);
 		}
 		win = display_dispTable(&gtable, key_input, turn, cursor_state);
