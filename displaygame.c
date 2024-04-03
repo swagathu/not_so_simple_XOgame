@@ -348,7 +348,7 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
 	display_drawBottom(width);
 
 	int winner = FAILURE;
-	if (key_input == ENTER_KEY) {
+	if (key_input == ENTER_KEY && g->filled >= (width * 2 - 1)) {
 		winner = display_validateTable(width, g);
 	}
 	if (winner != FAILURE) { 
@@ -362,3 +362,4 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
 	}
 	return FAILURE;
 }
+
