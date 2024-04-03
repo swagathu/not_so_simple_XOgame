@@ -16,7 +16,7 @@ int getinputEvent(void) {
 	pfd.fd = STDIN_FILENO;
 	pfd.events = POLLIN;
 
-	int timeout = 0;//in milliseconds
+	int timeout = LOOPDELAY_MS;//in milliseconds
 
 	return poll(&pfd, 1, timeout);
 }
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	int iter = 0;
 	int cursor_state = 0;
 	int win = FAILURE;
-	struct timespec a = {0, LOOPDELAY_MS* 1000000};
+	int cur_update_flag = 0;
 	//display_dispTable(&gtable, key_input, turn, cursor_state);
 	while (1)
 	{
@@ -123,18 +123,24 @@ int main(int argc, char *argv[])
 			//for blinking cursor.
 			iter = iter + LOOPDELAY_MS;
 
-			if (iter < (BLINKDELAY_MS/2)) {
+			if (iter < BLINKDELAY_MS/2 && cursor_state != 0) {
 				cursor_state = 0;
-			} else {
+				cur_update_flag = 1;
+			} else if (iter >= BLINKDELAY_MS/2 && cursor_state != 1) {
 				cursor_state = 1;
+				cur_update_flag = 1;
 			}
 			if (iter >= BLINKDELAY_MS) {
 				iter = 0;
 			}
 			key_input = 0;
-			nanosleep(&a, NULL);
 		}
-		win = display_dispTable(&gtable, key_input, turn, cursor_state);
+		if (cur_update_flag || key_input != 0) {
+			win = display_dispTable(&gtable, key_input, turn, cursor_state);
+			cur_update_flag = 0;
+		} else {
+			win = FAILURE;
+		}
 		if (key_input == ENTER_KEY && win == TURN_DONE)
 		{
 			if (turn == O_CHANCE)
