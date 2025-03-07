@@ -4,6 +4,11 @@
 #include <unistd.h>
 #include <poll.h>
 #include <time.h>
+#include <signal.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
 #include "displaygame.h"
 
 #define DEF_WIDTH 3
@@ -11,6 +16,14 @@
 #define LOOPDELAY_MS     100
 
 struct termios terminal_bkp;
+int winch_event = 0;
+
+void handle_winch(int sig) {
+	struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1) {
+        winch_event = 1;
+    }
+}
 
 int getinputEvent(void) {
 	struct pollfd pfd;
@@ -52,6 +65,7 @@ int reset_terminal(void)
 
 int main(int argc, char *argv[])
 {
+	signal(SIGWINCH, handle_winch);
 	int width = 0;
 	char * useless;
 	if (argc > 1)
@@ -115,6 +129,7 @@ int main(int argc, char *argv[])
 						show_value_flag = 0;
 						break;
 					default:
+						printf("Unknown sequence\n");
 						continue;
 						break;
 				}
@@ -130,6 +145,11 @@ int main(int argc, char *argv[])
 		}
 		else if (c == 'q')
 		{
+			struct termSize t_sz = get_terminal_width();
+			int term_height = t_sz.height;
+			int side_len = width;
+    		int end_y = (term_height - (6 * side_len)) / 2 + (6 * side_len) % 2 + (side_len * 6) + 1;
+			cursorXY(0, end_y);
 			printf("q pressed. Exiting.\n");
 			break;
 		} else if (c == 0) {
@@ -163,7 +183,8 @@ int main(int argc, char *argv[])
 			key_input = 0;
 		}
 		if (cur_update_flag || key_input != 0) {
-			win = display_dispTable(&gtable, key_input, turn, cursor_state);
+			win = display_dispTable(&gtable, key_input, turn, cursor_state, winch_event);
+			winch_event = 0;
 			cur_update_flag = 0;
 		} else {
 			win = FAILURE;
@@ -182,7 +203,8 @@ int main(int argc, char *argv[])
 		if (win == SUCCESS)
 		{
 			cursor_state = 0;
-			display_dispTable(&gtable, key_input, turn, cursor_state);
+			display_dispTable(&gtable, key_input, turn, cursor_state, winch_event);
+			winch_event = 0;
 			printf("Game Over..\n");
 			break;
 		}

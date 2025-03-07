@@ -2,7 +2,8 @@
 // return codes
 #define FAILURE		-1
 #define SUCCESS		0
-
+//using: https://stackoverflow.com/a/72073868 
+#define cursorXY(x,y) printf("\033[%d;%dH",(y),(x))
 enum gamecodes
 {
 	O_CHANCE = 0,
@@ -30,6 +31,11 @@ enum keys
 	ENTER_KEY,
 };
 
+struct termSize {
+    int width;
+    int height;
+};
+
 // a width * width table
 struct game_table
 {
@@ -38,10 +44,12 @@ struct game_table
 	int cur_x;
 	int cur_y;
 	int filled;
+	int firstChar_xPos;
+	int firstChar_yPos;
 };
 
 // public functions
 int display_initGtable( int, struct game_table *);
 void display_deinitGtable(struct game_table *);
-int display_dispTable( struct game_table *, int, int, int);
-
+int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_state, int redraw_table);
+struct termSize get_terminal_width();

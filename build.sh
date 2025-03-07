@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gcc displaygame.c main.c -o XOgame
+gcc new_displaygame.c main.c -o XOgame
