@@ -81,11 +81,11 @@ int display_drawRow(int curRow, int width, int **table, int cur_x, int cur_y, in
 		{
 			if (table[i][curRow] == -1)
 			{
-				printf("║  *  ");
+				printf("║     ");
 			}
 			else
 			{
-				printf("║  %c  ", (table[i][curRow] == 0) ? 'O' : 'X');
+				printf("║  %s  ", (table[i][curRow] == 0) ? "◯" : "᙭");
 			}
 		}
 	}

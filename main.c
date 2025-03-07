@@ -10,6 +10,8 @@
 #define BLINKDELAY_MS 1000
 #define LOOPDELAY_MS     100
 
+struct termios terminal_bkp;
+
 int getinputEvent(void) {
 	struct pollfd pfd;
 
@@ -26,6 +28,7 @@ int init_terminal(void)
 	int ret = 0;
 	struct termios term;
 	ret = tcgetattr(STDERR_FILENO, &term);
+	terminal_bkp=term;
 	term.c_lflag = ~(ECHO);
 	if (ret != 0)
 		return FAILURE;
@@ -39,12 +42,8 @@ int init_terminal(void)
 int reset_terminal(void)
 {
 	int ret = 0;
-	struct termios term;
-	ret = tcgetattr(STDERR_FILENO, &term);
-	term.c_lflag = (ECHO);
-	if (ret != 0)
-		return FAILURE;
-	ret = tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+	ret = tcsetattr(STDIN_FILENO, TCSANOW, &terminal_bkp);
 	if (ret != 0)
 		return FAILURE;
 	printf("\e[?25h");
@@ -76,6 +75,8 @@ int main(int argc, char *argv[])
 	int cursor_state = 0;
 	int win = FAILURE;
 	int cur_update_flag = 0;
+	int show_value_flag = 0;
+	int blink_fast_flag = 0;
 	//display_dispTable(&gtable, key_input, turn, cursor_state);
 	while (1)
 	{
@@ -94,19 +95,27 @@ int main(int argc, char *argv[])
 
 			if (seq[0] == '[')
 			{
+				
 				switch (seq[1])
 				{
 					case 'A':
 						key_input = UP_ARROW;
+						show_value_flag = 0;
 						break;
 					case 'B':
 						key_input = DOWN_ARROW;
+						show_value_flag = 0;
 						break;
 					case 'C':
 						key_input = RIGHT_ARROW;
+						show_value_flag = 0;
 						break;
 					case 'D':
 						key_input = LEFT_ARROW;
+						show_value_flag = 0;
+						break;
+					default:
+						continue;
 						break;
 				}
 			}
@@ -114,6 +123,10 @@ int main(int argc, char *argv[])
 		else if (c == 13)
 		{
 			key_input = ENTER_KEY;
+			show_value_flag = 1;
+			cursor_state=0;
+			cur_update_flag=1;
+			iter=0;
 		}
 		else if (c == 'q')
 		{
@@ -122,16 +135,30 @@ int main(int argc, char *argv[])
 		} else if (c == 0) {
 			//for blinking cursor.
 			iter = iter + LOOPDELAY_MS;
-
-			if (iter < BLINKDELAY_MS/2 && cursor_state != 0) {
-				cursor_state = 0;
+			if (show_value_flag != 1) {
+				if (iter < BLINKDELAY_MS/2 && cursor_state != 0) {
+					cursor_state = 0;
+					cur_update_flag = 1;
+				} else if (iter >= BLINKDELAY_MS/2 && cursor_state != 1) {
+					cursor_state = 1;
+					cur_update_flag = 1;
+				}
+				if (iter >= BLINKDELAY_MS) {
+					iter = 0;
+				}
+			} else {
+				if (blink_fast_flag == 0) {
+					cursor_state = 0;
+					blink_fast_flag = 1;
+				} else {
+					cursor_state = 1;
+					blink_fast_flag = 0;
+				}
 				cur_update_flag = 1;
-			} else if (iter >= BLINKDELAY_MS/2 && cursor_state != 1) {
-				cursor_state = 1;
-				cur_update_flag = 1;
-			}
-			if (iter >= BLINKDELAY_MS) {
-				iter = 0;
+				if (iter >= BLINKDELAY_MS) {
+					iter = 0;
+					show_value_flag = 0;
+				}
 			}
 			key_input = 0;
 		}
