@@ -129,7 +129,6 @@ int main(int argc, char *argv[])
 						show_value_flag = 0;
 						break;
 					default:
-						printf("Unknown sequence\n");
 						continue;
 						break;
 				}
@@ -203,7 +202,7 @@ int main(int argc, char *argv[])
 		if (win == SUCCESS)
 		{
 			cursor_state = 0;
-			display_dispTable(&gtable, key_input, turn, cursor_state, winch_event);
+			display_dispTable(&gtable, key_input, turn, cursor_state, 1);
 			winch_event = 0;
 			printf("Game Over..\n");
 			break;

@@ -10,7 +10,11 @@ const int leftGap = 5;
 static int cur_x = 0;
 static int cur_y = 0;
 
-int draw_value_single(int x, int y, int val, int cursor_state);
+int draw_value_single(int x, int y, int val, int cursor_state , int width);
+
+int prev_x = 0;
+int prev_y = 0;
+int prev_val = -1;
 
 struct termSize get_terminal_width()
 {
@@ -269,11 +273,11 @@ int display_printWinner(int width, int winner)
     {
         if ((winner == WIN_O) || (winner == WIN_X))
         {
-            printf("Player %c has won!\n", (winner == WIN_O) ? 'O' : 'X');
+            printf("\nPlayer %c has won!\n", (winner == WIN_O) ? 'O' : 'X');
         }
         else if (winner == DRAW)
         {
-            printf("Draw , No winner!\n");
+            printf("\nDraw , No winner!\n");
         }
         return SUCCESS;
     }
@@ -309,7 +313,7 @@ int draw_Table(int side_len, struct game_table *game_table)
     printXY("+++++++++++", ((t_sz.width - 11) / 2) + (11 % 2), 3, 11);
 
     int gap = (term_width - (6 * side_len)) / 2 + (6 * side_len) % 2;
-    cur_y = (term_height - (6 * side_len)) / 2 + (6 * side_len) % 2;
+    cur_y = (term_height - (side_len)) / 2 + (side_len) % 2;
     int i = 0, j = 0;
     // printf("%d , %d", cur_x, cur_y);
     printXY("╔═════", gap, cur_y, 6);
@@ -357,16 +361,16 @@ int draw_Table(int side_len, struct game_table *game_table)
     return 0;
 }
 
-int draw_value_single(int x, int y, int val, int cursor_state)
+int draw_value_single(int x, int y, int val, int cursor_state , int width)
 {
     struct termSize t_sz = get_terminal_width();
     int term_width = t_sz.width;
     int term_height = t_sz.height;
-    int side_len = 3;
+    int side_len = width;
     int FirstChar_xpos = (term_width - (6 * side_len)) / 2 + (6 * side_len) % 2 + 3;
     const int yiter = 2;
     const int xiter = 6;
-    int FirstChar_ypos = (term_height - (6 * side_len)) / 2 + (6 * side_len) % 2 + 1;
+    int FirstChar_ypos = (term_height - (side_len)) / 2 + (side_len) % 2 + 1;
     if (cursor_state)
     {
         printXY("_", FirstChar_xpos + (x * xiter), FirstChar_ypos + (y * yiter), 1);
@@ -393,26 +397,17 @@ int draw_value_single(int x, int y, int val, int cursor_state)
 
 int draw_values(int width, int **table, int x, int y, int cursor_state)
 {
-    struct termSize t_sz = get_terminal_width();
-    int term_width = t_sz.width;
-    int term_height = t_sz.height;
-    int side_len = width;
-    int FirstChar_xpos = (term_width - (6 * side_len)) / 2 + (6 * side_len) % 2 + 3;
-    const int yiter = 2;
-    const int xiter = 6;
-    int FirstChar_ypos = (term_height - (6 * side_len)) / 2 + (6 * side_len) % 2 + 1;
-
     for (int i = 0; i < width; i++)
     {
         for (int j = 0; j < width; j++)
         {
             if (i == x && j == y)
             {
-                draw_value_single(i, j, table[i][j], cursor_state);
+                draw_value_single(i, j, table[i][j], cursor_state, width);
             }
             else
             {
-                draw_value_single(i, j, table[i][j], 0);
+                draw_value_single(i, j, table[i][j], 0, width);
             }
         }
     }
@@ -437,7 +432,7 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     if (key_input != 0)
     {
         display_SetCurLoc(width, key_input, &(g->cur_x), &(g->cur_y));
-        draw_values(width, table, g->cur_x, g->cur_y, cursor_state);
+        draw_value_single(prev_x, prev_y, prev_val, 0, width);
     }
 
     struct termSize t_sz = get_terminal_width();
@@ -451,13 +446,16 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
         draw_values(width, table, g->cur_x, g->cur_y, cursor_state);
         init_flag = 1;
     }
-    draw_value_single(g->cur_x, g->cur_y, table[g->cur_x][g->cur_y], cursor_state);
+    draw_value_single(g->cur_x, g->cur_y, table[g->cur_x][g->cur_y], cursor_state, width);
+    prev_x = g->cur_x;
+    prev_y = g->cur_y;
+    prev_val = table[g->cur_x][g->cur_y];
     // Print Current Position
     char print_pos[100] = {0};
     sprintf(print_pos, "Xpos = %d, Ypos = %d, cur_turn: %c", g->cur_x + 1, g->cur_y + 1, (turn == O_CHANCE) ? 'O' : 'X');
     int print_pos_len = strlen(print_pos);
     int print_pos_x = ((t_sz.width - print_pos_len) / 2) + (print_pos_len % 2);
-    int print_pos_y = ((t_sz.height - g->width) / 2) + (g->width % 2) - ((g->width * 6) / 2) - 2;
+    int print_pos_y = ((t_sz.height - g->width) / 2) + (g->width % 2) - ((g->width) / 2) - 2;
     printXY(print_pos, print_pos_x, print_pos_y, print_pos_len);
     fflush(stdout);
     int winner = FAILURE;
