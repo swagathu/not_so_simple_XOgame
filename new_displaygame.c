@@ -31,6 +31,13 @@ struct termSize get_terminal_width()
     return t;
 }
 
+void clear_row(int row, int width) {
+    cursorXY(0, row);
+    for(int i = 0; i < width; i++) {
+        printf(" ");
+    }
+}
+
 static inline void printXY(char *data, int x, int y, int len)
 {
     cursorXY(x, y);
@@ -456,6 +463,7 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     int print_pos_len = strlen(print_pos);
     int print_pos_x = ((t_sz.width - print_pos_len) / 2) + (print_pos_len % 2);
     int print_pos_y = ((t_sz.height - g->width) / 2) + (g->width % 2) - ((g->width) / 2) - 2;
+    clear_row(print_pos_y, t_sz.width);
     printXY(print_pos, print_pos_x, print_pos_y, print_pos_len);
     fflush(stdout);
     int winner = FAILURE;
