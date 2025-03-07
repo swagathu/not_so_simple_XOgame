@@ -477,19 +477,3 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     }
     return FAILURE;
 }
-
-// int main() {
-//     struct game_table gtable;
-
-// 	display_initGtable(3, &gtable);
-//     display_dispTable(&gtable, ENTER_KEY, X_CHANCE, 0, 1);
-//     // while ( 1) {
-//         display_dispTable(&gtable, ENTER_KEY, X_CHANCE, 0, 0);
-//         // draw_value_single(0, 0, 0, 0);
-//         sleep(1);
-//         display_dispTable(&gtable, ENTER_KEY, X_CHANCE, 1, 0);
-//         // sleep(1);
-//     // }
-//     printf("\n");
-//     return 0;
-// }
