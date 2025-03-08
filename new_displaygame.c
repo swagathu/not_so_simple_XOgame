@@ -460,8 +460,7 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     // Print Current Position
     char print_pos[100] = {0};
     memset(print_pos, '\0', sizeof(print_pos));
-    snprintf(print_pos, sizeof(print_pos), "Xpos = %d, Ypos = %d, cur_turn: %c", g->cur_x + 1, g->cur_y + 1, (turn == O_CHANCE) ? 'O' : 'X');
-    int print_pos_len = strlen(print_pos);
+    int print_pos_len = snprintf(print_pos, sizeof(print_pos), "Xpos = %d, Ypos = %d, cur_turn: %c", g->cur_x + 1, g->cur_y + 1, (turn == O_CHANCE) ? 'O' : 'X');
     int print_pos_x = ((t_sz.width - print_pos_len) / 2) + (print_pos_len % 2);
     int print_pos_y = ((t_sz.height - g->width) / 2) + (g->width % 2) - ((g->width) / 2) - 2;
     clear_row(print_pos_y, t_sz.width);
