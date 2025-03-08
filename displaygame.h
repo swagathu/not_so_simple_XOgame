@@ -52,5 +52,5 @@ struct game_table
 // public functions
 int display_initGtable( int, struct game_table *);
 void display_deinitGtable(struct game_table *);
-int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_state, int redraw_table);
+int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_state, int *redraw_table);
 struct termSize get_terminal_width();

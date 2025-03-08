@@ -17,18 +17,17 @@
 
 struct termios terminal_bkp;
 int winch_event = 0;
-struct termSize t_sz_global;
+struct termSize * t_sz_global;
 
 void handle_winch(int sig)
 {
 	struct winsize w;
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)
 	{
+		t_sz_global->width = w.ws_col;
+		t_sz_global->height = w.ws_row;
 		winch_event = 1;
 	}
-
-	t_sz_global.width = w.ws_col;
-	t_sz_global.height = w.ws_row;
 }
 
 int getinputEvent(void)
@@ -38,8 +37,7 @@ int getinputEvent(void)
 	pfd.fd = STDIN_FILENO;
 	pfd.events = POLLIN;
 
-	int timeout = LOOPDELAY_MS; // in milliseconds
-
+	int timeout = LOOPDELAY_MS; // in milliseconds;
 	return poll(&pfd, 1, timeout);
 }
 
@@ -73,9 +71,7 @@ int reset_terminal(void)
 
 int main(int argc, char *argv[])
 {
-	signal(SIGWINCH, handle_winch);
 	// Set initial terminal size
-	handle_winch(0);
 	int width = 0;
 	char *useless;
 	if (argc > 1)
@@ -91,7 +87,10 @@ int main(int argc, char *argv[])
 	init_terminal();
 	struct game_table gtable;
 	display_initGtable(width, &gtable);
-
+	t_sz_global = &(gtable.t_sz);
+	// call signal handler only after gtable initialization
+	handle_winch(0);
+	signal(SIGWINCH, handle_winch);
 	char c;
 	int key_input = 0;
 	int turn = O_CHANCE;
@@ -104,16 +103,23 @@ int main(int argc, char *argv[])
 
 	while (1)
 	{
-		gtable.t_sz.width = t_sz_global.width;
-		gtable.t_sz.height = t_sz_global.height;
+		cursorXY(0, 0);
+		// printf("iter: %d, key_input: %d, cursor_state: %d, show_value_flag: %d, cur_update_flag: %d\n", iter, key_input, cursor_state, show_value_flag, cur_update_flag);
 		if (getinputEvent())
 		{
-			c = getchar();
+			if (!winch_event)
+			{
+				c = getchar();
+			} else
+			{
+				c = 0;
+			}
 		}
 		else
 		{
 			c = 0;
 		}
+
 		if (c == 'w')
 		{
 			cursor_state = 1;
@@ -234,10 +240,10 @@ int main(int argc, char *argv[])
 			}
 			key_input = 0;
 		}
-		if (cur_update_flag || key_input != 0)
+
+		if (winch_event || cur_update_flag || key_input != 0)
 		{
-			win = display_dispTable(&gtable, key_input, turn, cursor_state, winch_event);
-			winch_event = 0;
+			win = display_dispTable(&gtable, key_input, turn, cursor_state, &winch_event);
 			cur_update_flag = 0;
 		}
 		else
@@ -258,8 +264,8 @@ int main(int argc, char *argv[])
 		if (win == SUCCESS)
 		{
 			cursor_state = 0;
-			display_dispTable(&gtable, key_input, turn, cursor_state, 1);
-			winch_event = 0;
+			winch_event  = 1;
+			display_dispTable(&gtable, key_input, turn, cursor_state, &winch_event);
 			printf("Game Over..\n");
 			break;
 		}

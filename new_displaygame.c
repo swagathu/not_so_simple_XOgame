@@ -10,6 +10,9 @@ const int leftGap = 5;
 static int cur_x = 0;
 static int cur_y = 0;
 
+static int prev_table_term_width = 0;
+static int prev_table_term_heigth = 0;
+
 int draw_value_single(int x, int y, int val, int cursor_state, int width);
 
 int prev_x = 0;
@@ -299,6 +302,8 @@ int draw_Table(int side_len, struct game_table *game_table)
 {
     int term_width = game_table->t_sz.width;
     int term_height = game_table->t_sz.height;
+    prev_table_term_width = term_width;
+    prev_table_term_heigth = term_height;
     if (term_width == -1 || term_height == -1)
     {
         printf("Error getting terminal size\n");
@@ -317,15 +322,13 @@ int draw_Table(int side_len, struct game_table *game_table)
     int gap = (term_width - (6 * side_len)) / 2 + (6 * side_len) % 2;
     cur_y = (term_height - (side_len)) / 2 + (side_len) % 2;
     int i = 0, j = 0;
-    // printf("%d , %d", cur_x, cur_y);
+
     printXY("╔═════", gap, cur_y, 6);
     for (int i = 1; i < side_len; i++)
     {
-        // printf("%d , %d", cur_x, cur_y);
         printXY("╦═════", cur_x, cur_y, 6);
     }
     printXY("╗", cur_x, cur_y, 6);
-    // printf("\n%d , %d", cur_x, cur_y);
 
     for (int i = 0; i < side_len * 2 - 1; i++)
     {
@@ -416,7 +419,7 @@ int draw_values(int width, int **table, int x, int y, int cursor_state)
     return 0;
 }
 int init_flag = 0;
-int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_state, int redraw_table)
+int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_state, int *redraw_table)
 {
     // printf("Key Input: %d, Turn: %d, Cursor State: %d, Redraw Table: %d\n", key_input, turn, cursor_state, redraw_table);
     int width = g->width;
@@ -440,8 +443,12 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
 
     ret2 = display_setValue(g, key_input, turn);
 
-    if (redraw_table || init_flag == 0)
+    if (*redraw_table || init_flag == 0)
     {
+        if (prev_table_term_width == g->t_sz.width && prev_table_term_heigth == g->t_sz.height)
+        {
+            *redraw_table = 0;
+        }
         display_clearScreen();
         draw_Table(width, g);
         draw_values(width, table, g->cur_x, g->cur_y, cursor_state);
