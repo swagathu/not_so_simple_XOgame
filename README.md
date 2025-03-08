@@ -2,5 +2,5 @@
 
 ### usage:
     ./XOgame <width>
-    default width is 3
+default width is 3
 ### press q to quit.
