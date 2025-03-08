@@ -46,6 +46,7 @@ struct game_table
 	int filled;
 	int firstChar_xPos;
 	int firstChar_yPos;
+	struct termSize t_sz;
 };
 
 // public functions

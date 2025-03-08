@@ -10,7 +10,7 @@ const int leftGap = 5;
 static int cur_x = 0;
 static int cur_y = 0;
 
-int draw_value_single(int x, int y, int val, int cursor_state , int width);
+int draw_value_single(int x, int y, int val, int cursor_state, int width);
 
 int prev_x = 0;
 int prev_y = 0;
@@ -31,9 +31,11 @@ struct termSize get_terminal_width()
     return t;
 }
 
-void clear_row(int row, int width) {
+void clear_row(int row, int width)
+{
     cursorXY(0, row);
-    for(int i = 0; i < width; i++) {
+    for (int i = 0; i < width; i++)
+    {
         printf(" ");
     }
 }
@@ -269,10 +271,9 @@ int display_validateTable(int width, struct game_table *g)
     return FAILURE; // No winner yet
 }
 
-int display_printWinner(int width, int winner)
+int display_printWinner(int width, int winner, struct termSize *t_sz)
 {
-    struct termSize t_sz = get_terminal_width();
-    int term_height = t_sz.height;
+    int term_height = t_sz->height;
     int side_len = width;
     int end_y = (term_height - (6 * side_len)) / 2 + (6 * side_len) % 2 + (side_len * 6) + 1;
     cursorXY(0, end_y);
@@ -296,11 +297,9 @@ int display_printWinner(int width, int winner)
 
 int draw_Table(int side_len, struct game_table *game_table)
 {
-    struct termSize t_sz = get_terminal_width();
-    char *line_data = malloc(t_sz.width * sizeof(char));
-    int term_width = t_sz.width;
-    int term_height = t_sz.height;
-    if (t_sz.width == -1 || t_sz.height == -1)
+    int term_width = game_table->t_sz.width;
+    int term_height = game_table->t_sz.height;
+    if (term_width == -1 || term_height == -1)
     {
         printf("Error getting terminal size\n");
         return -1;
@@ -310,14 +309,10 @@ int draw_Table(int side_len, struct game_table *game_table)
         printf("Invalid side length\n");
         return -1;
     }
-    // if (side_len > term_width) {
-    //     printf("Side length is too large for terminal\n");
-    //     return -1;
-    // }
 
-    printXY("+++++++++++", ((t_sz.width - 11) / 2) + (11 % 2), 1, 11);
-    printXY("+ XO game +", ((t_sz.width - 11) / 2) + (11 % 2), 2, 11);
-    printXY("+++++++++++", ((t_sz.width - 11) / 2) + (11 % 2), 3, 11);
+    printXY("+++++++++++", ((term_width - 11) / 2) + (11 % 2), 1, 11);
+    printXY("+ XO game +", ((term_width - 11) / 2) + (11 % 2), 2, 11);
+    printXY("+++++++++++", ((term_width - 11) / 2) + (11 % 2), 3, 11);
 
     int gap = (term_width - (6 * side_len)) / 2 + (6 * side_len) % 2;
     cur_y = (term_height - (side_len)) / 2 + (side_len) % 2;
@@ -364,11 +359,10 @@ int draw_Table(int side_len, struct game_table *game_table)
     }
     printXY("╝", cur_x, cur_y, 6);
     fflush(stdout);
-    free(line_data);
     return 0;
 }
 
-int draw_value_single(int x, int y, int val, int cursor_state , int width)
+int draw_value_single(int x, int y, int val, int cursor_state, int width)
 {
     struct termSize t_sz = get_terminal_width();
     int term_width = t_sz.width;
@@ -473,7 +467,7 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     }
     if (winner != FAILURE)
     {
-        ret = display_printWinner(g->width, winner);
+        ret = display_printWinner(g->width, winner, &(g->t_sz));
     }
     if (ret == SUCCESS)
     {
