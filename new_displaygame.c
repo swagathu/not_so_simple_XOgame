@@ -321,7 +321,6 @@ int draw_Table(int side_len, struct game_table *game_table)
 
     int gap = (term_width - (6 * side_len)) / 2 + (6 * side_len) % 2;
     cur_y = (term_height - (side_len)) / 2 + (side_len) % 2;
-    int i = 0, j = 0;
 
     printXY("╔═════", gap, cur_y, 6);
     for (int i = 1; i < side_len; i++)
@@ -460,7 +459,8 @@ int display_dispTable(struct game_table *g, int key_input, int turn, int cursor_
     prev_val = table[g->cur_x][g->cur_y];
     // Print Current Position
     char print_pos[100] = {0};
-    sprintf(print_pos, "Xpos = %d, Ypos = %d, cur_turn: %c", g->cur_x + 1, g->cur_y + 1, (turn == O_CHANCE) ? 'O' : 'X');
+    memset(print_pos, '\0', sizeof(print_pos));
+    snprintf(print_pos, sizeof(print_pos), "Xpos = %d, Ypos = %d, cur_turn: %c", g->cur_x + 1, g->cur_y + 1, (turn == O_CHANCE) ? 'O' : 'X');
     int print_pos_len = strlen(print_pos);
     int print_pos_x = ((t_sz.width - print_pos_len) / 2) + (print_pos_len % 2);
     int print_pos_y = ((t_sz.height - g->width) / 2) + (g->width % 2) - ((g->width) / 2) - 2;
