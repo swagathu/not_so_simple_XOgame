@@ -1,6 +1,6 @@
 # NOT Simple XO game
 
-### usage:
+### usage
     ./XOgame <width>
 default width is 3
 ### press q to quit.
